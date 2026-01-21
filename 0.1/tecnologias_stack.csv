@@ -1,0 +1,8 @@
+Componente,Tecnología,Versión,Propósito
+Backend,Python 3.8+,>=3.8,Lenguaje principal backend
+Backend,scikit-learn,1.3.x,"Random Forest, preprocesamiento"
+Backend,TensorFlow/Keras,2.15.x,Redes neuronales profundas
+Backend,PyCM,4.0.x,Matrices de confusión avanzadas
+Frontend,Flutter 3.0+,>=3.0,Framework UI multiplataforma
+Frontend,Dart,3.0.x,Lenguaje de programación
+Frontend,Material Design 3,Latest,Sistema de diseño visual

@@ -1,0 +1,4 @@
+Modelo,Tipo,Características Principales,Accuracy Esperado,Ventajas
+Random Forest,Ensemble Learning,"100 árboles, balanced weights, max_depth=10",88-92%,"Resistente a overfitting, interpretable"
+Red Neuronal Profunda,Deep Learning,"4 capas (128→64→32→3), dropout, adam optimizer",85-90%,"Captura patrones complejos, alta capacidad"
+PyCM (Evaluación),Análisis de Métricas,"Matriz confusión, precision, recall, F1-score",N/A (herramienta de análisis),Métricas detalladas por clase
