@@ -22,8 +22,8 @@ Deliver a minimal, working 0.2 version that exposes a Python core pipeline and a
 ## Status
 - Data Assets: Completed
 - Python Core Pipeline: Completed
-- API Service: In progress (validation pending final /analyze response capture)
+- API Service: Blocked (validation inconclusive in this environment)
 
 ## Next Actions
-1. Re-run API validation and capture `/analyze` response body.
+1. Re-run API validation in a stable environment and capture `/analyze` response body.
 2. Mark API Service as Completed if validation passes.
