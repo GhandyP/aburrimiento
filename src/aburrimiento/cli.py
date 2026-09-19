@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import argparse
 from pathlib import Path
 
-from analizador import AnalizadorAburrimiento
+from .model import BoredomModel
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -12,22 +14,23 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    analizador = AnalizadorAburrimiento(data_dir=args.data_dir)
-    dataset = analizador.generar_datos(args.muestras)
-    analizador.entrenar(dataset.features, dataset.labels)
+    analizador = BoredomModel(data_dir=args.data_dir)
+    dataset = analizador.generate(args.muestras)
+    analizador.train(dataset.features, dataset.labels)
 
-    ejemplo = analizador.construir_ejemplo(args.nivel)
-    prediccion = analizador.predecir(ejemplo)[0]
+    ejemplo = analizador.example_for(args.nivel)
+    prediccion = analizador.predict(ejemplo)[0]
 
     print("Demo completa")
     print(f"Muestras: {args.muestras}")
     print(f"Nivel solicitado: {args.nivel}")
     print(f"Prediccion: {prediccion}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

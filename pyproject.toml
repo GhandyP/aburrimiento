@@ -18,6 +18,9 @@ dependencies = [
     "pydantic>=2.9",
 ]
 
+[project.scripts]
+aburrimiento = "aburrimiento.cli:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8.3",

@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
-import sys
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-PYTHON_DIR = BASE_DIR / "python"
-sys.path.insert(0, str(PYTHON_DIR))
+from aburrimiento.model import BoredomModel
 
-from analizador import AnalizadorAburrimiento
+BASE_DIR = Path(__file__).resolve().parents[2]
+DATA_DIR = BASE_DIR / "assets"
 
 app = FastAPI(title="Analizador Aburrimiento API")
 
@@ -25,9 +23,9 @@ class AnalyzeResponse(BaseModel):
 
 @app.on_event("startup")
 def startup() -> None:
-    analizador = AnalizadorAburrimiento()
-    dataset = analizador.generar_datos(300)
-    analizador.entrenar(dataset.features, dataset.labels)
+    analizador = BoredomModel(data_dir=DATA_DIR)
+    dataset = analizador.generate(300)
+    analizador.train(dataset.features, dataset.labels)
     app.state.analizador = analizador
 
 
@@ -38,7 +36,7 @@ def health() -> dict[str, str]:
 
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
-    analizador: AnalizadorAburrimiento = app.state.analizador
+    analizador: BoredomModel = app.state.analizador
     payload = _normalize_payload(request.datos, analizador.feature_names)
     missing = [name for name in analizador.feature_names if name not in payload]
 
@@ -49,7 +47,7 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         )
 
     features = analizador.features_from_payload(payload)
-    nivel = analizador.predecir(features)[0]
+    nivel = analizador.predict(features)[0]
     return AnalyzeResponse(nivel=nivel)
 
 
