@@ -6,7 +6,7 @@ Minimal working version with Python ML pipeline, FastAPI service, and Flutter UI
 - `data/`: CSV and JSON assets
 - `python/`: ML pipeline + CLI demo
 - `api/`: FastAPI service
-- `flutter/`: Flutter UI stub
+- `(frontend)`: see the Frontend status note at the end of this file.
 
 ## Python CLI
 ```bash
@@ -30,15 +30,14 @@ curl -X POST http://127.0.0.1:8000/analyze \
   -d '{"datos": {"reflejo_sistemas_culturales": 0.8, "productividad_capitalista": 0.75, "alienacion_neoliberal": 0.85, "racismo_sistemico": 0.6, "malestar_generalizado": 0.9, "carencia_sentido": 0.85, "restriccion_libertad": 0.8, "frustracion_agencia": 0.9, "desenganche": 0.85, "alta_excitacion": 0.5, "inatencion": 0.8, "percepcion_tiempo_lenta": 0.9, "estrategias_bloqueadas": 0.85, "angustia_profunda": 0.8}}'
 ```
 
-## Flutter
-```bash
-cd 0.2/flutter
-flutter pub get
-flutter run
-```
+## Frontend status
 
-### API Base URL
-- Desktop: `http://127.0.0.1:8000`
-- Android emulator: `http://10.0.2.2:8000`
-- iOS simulator: `http://127.0.0.1:8000`
-- Physical device: use your machine IP on the same network
+The Flutter client that used to live in `0.2/flutter/` was archived under `legacy/flutter/` and is no
+longer maintained: it hardcoded `127.0.0.1:8000` and its only test was Flutter's default counter
+stub. A React + Vite + TypeScript frontend replaces it under `web/`.
+
+Until that frontend lands, the only supported interfaces are the Python CLI and the HTTP API, and
+the `curl` example above is the reference client.
+
+Note that this iteration's `python/` and `api/` directories are themselves being migrated into the
+`src/aburrimiento/` package; see `odd/tasks/aburrimiento-v1.md`.

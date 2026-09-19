@@ -47,7 +47,8 @@ yarn-error.log*
 .tmp/
 
 # Agent session transcripts are scratch, not project artifacts
-session-ses_*.md
+# Anchored to the repository root so archived transcripts stay versioned.
+/session-ses_*.md
 
 # ---------------------------------------------------------------------------
 # Environment, local data and secrets
