@@ -30,7 +30,7 @@ from "two half-finished prototypes" to one coherent, locally verifiable system.
 | D2 | `sys.path.insert` import hack couples API to a sibling directory layout | `0.2/api/main.py:13-15` | T3, T4 |
 | D3 | `AnalizadorAburrimiento` resolves its data dir by counting `parents[1]`, so the module only works from its exact build location | `0.2/python/analizador.py:44` | T4 |
 | D4 | Dependencies are unpinned (`numpy`, `pandas`, `scikit-learn`) — no reproducible environment | `0.2/python/requirements.txt` | T3 |
-| D5 | `StandardScaler` is applied before a Random Forest, which is scale-invariant; it adds a persisted state object with no effect on results | `0.2/python/analizador.py:47,94-99` | T4, T12 |
+| D5 | `StandardScaler` is applied before a Random Forest, which is scale-invariant; it adds a persisted state object with no effect on results | `0.2/python/analizador.py:47,94-99` | T10, T12 |
 | D6 | Accuracy claims (RF 88–92%, NN 85–90%) were never measured against a held-out set | `0.1/comparacion_modelos.csv`; `0.1/DOCUMENTACION_SISTEMA.md` | T10, T11 |
 | D7 | Synthetic labels are generated from the same rule the model learns, so reported accuracy cannot establish real-world validity | `0.2/python/analizador.py:64-90` | T9, T11 |
 | D8 | No tests, no linter, no type checker, no single verification entry point | repo-wide | T3, T14, T16, T21 |
@@ -164,22 +164,26 @@ its closure criterion was observed and the commit identity was recorded in this 
 
 **T3. Establish the Python project skeleton and toolchain**
 - Deliverable: `pyproject.toml` (package `aburrimiento`, `src/` layout, pinned dependency ranges,
-  ruff + mypy + pytest config), `uv.lock`, `Makefile` with `setup`, `train`, `check`, `run`, `web`,
-  `.editorconfig`. Target Python 3.13.
+  ruff + mypy + pytest config), `uv.lock`, `Makefile` with `setup`, `fmt`, `lint`, `typecheck`,
+  `test`, `check`, `clean`, `.editorconfig`, plus a root `README.md` placeholder (required by the
+  build and referenced by `legacy/README.md`; T22 replaces it). Target Python 3.13.
 - Closure: `uv sync` from clean; `make check` runs ruff, mypy, pytest and exits 0 (with an empty
   test suite at this point, reported honestly).
 - Commit: `build(python): add uv project skeleton with ruff, mypy and pytest`
 
 **T4. Migrate the pipeline into the package, behavior preserved**
-- Deliverable: `src/aburrimiento/{schema,model,cli}.py` derived from `0.2/python/`, with the data
-  directory injected through configuration instead of `parents[1]` (D3), the import hack removed
-  (D2), the ineffective `StandardScaler` removed for the tree model (D5), and dependency ranges
-  pinned (D4).
-- Closure: a **baseline test captured before the move** asserts the same prediction for the same
-  seed and input after the move; `make check` green.
-- Commit: `refactor(core): move pipeline into aburrimiento package`
-- *Risk:* this is the highest-risk task for silent behavior change. The baseline test must be
-  written against the **0.2** implementation first, then kept as the regression guard.
+- Deliverable: `src/aburrimiento/{model,synthetic,cli}.py` derived from `0.2/python/`, the data
+  assets moved from `0.2/data` to `assets/`, `0.2/python/` deleted, and `0.2/api/main.py` importing
+  the installed package so the tree stays runnable.
+- **Pure move:** the `StandardScaler`, the hyperparameters, the RNG call order and the distributions
+  are untouched. D5 (removing the scale-invariant scaler) moves to T10/T12, where the effect can be
+  measured instead of assumed. `schema.py` arrives in T6, not here.
+- Closure: a baseline test captured from the **legacy module recovered from git** asserts identical
+  dataset digests, feature importances and `predict_proba`, plus the predicted labels; `make check`
+  green; the guard is mutation-tested (one modifier changed → fails; reverted → passes).
+- Commit: `refactor(core): migrate pipeline into the aburrimiento package`
+- *Risk:* the highest-risk task for silent behavior change. **Resolved:** the digests matched
+  exactly, so the move is proven, not assumed.
 
 ### Phase 1 — Canonical schema (closes F2, F3)
 
@@ -265,6 +269,9 @@ its closure criterion was observed and the commit identity was recorded in this 
 - Closure: `uvicorn aburrimiento.api:app --reload` serves `/docs` showing all routes with the
   request schema rendered from canonical ids.
 - Commit: `feat(api): serve health, schema and strict analyze endpoints`
+- *Note:* this task also deletes `0.2/` entirely (its API, README and any remaining trace). `0.2/`
+  is currently excluded from ruff precisely because it is scheduled for removal here; leaving that
+  exclusion in place after this task would be a silent hole in verification.
 
 **T14. Cover the API with a real test suite**
 - Deliverable: `tests/test_api.py` using `TestClient` covering the happy path, each missing field,
@@ -423,3 +430,46 @@ Conclusion: T7 may break the contract cleanly, with no deprecation window and no
 shim. Because `0.1/` uses the short names, the canonical ids must be declared explicitly in
 `assets/schema.json` (T5) rather than derived by slugifying CSV labels — the previous derivation is
 what created the split in the first place.
+
+---
+
+## 9. Execution log
+
+### Phase 0 — Foundation and hygiene — COMPLETE
+
+| Task | Commit | Closure evidence observed |
+|---|---|---|
+| Plan | `f38d7f3` | This document committed before any source write |
+| T1 | `8b51397` | 17 generated paths untracked; `git ls-files` matches 0 of them; `.gitignore` tracked |
+| T2 | `72bad94` | 158 files under `legacy/`; 0 references to `legacy/` from live code; no live `pubspec.yaml` |
+| T3 | `024eb34` | `make check` green (ruff, mypy strict, 2 tests); `uv.lock` pinned |
+| T4 | `5c5aa27` | Identical dataset digests, feature importances and `predict_proba`; guard mutation-tested |
+
+**Deviations from this plan, and why:**
+
+- **T3** additionally created a root `README.md` placeholder. Not in the task, but `pyproject.toml`
+  requires a readme for the build and `legacy/README.md` referenced a root README that did not exist.
+  T22 replaces it with the full version.
+- **T3** excluded `0.2/` from ruff and limited mypy to `src` and `tests`: `0.2/` is removed in T13,
+  and `tools/` does not exist until T8.
+- **T4** was executed as a pure move. D5 moved to T10/T12 because the scaler's removal is a behavior
+  change that a move-preservation test cannot validate.
+- **T4** renamed the analyzer to `BoredomModel` and deleted Spanish method aliases introduced during
+  the migration: the intermediate state exposed two public names for every method.
+- The T4 verification uses the strongest evidence available instead of a smoke test. The legacy
+  module was recovered with `git show HEAD:0.2/python/analizador.py`, executed against the migrated
+  package, and compared on dataset digests, the full feature-importances vector and `predict_proba`
+  for all three levels. All matched exactly.
+- A first regression test was rejected as insufficient: it pinned only `example_for()` (pure
+  arithmetic, no RNG involvement) and three widely separated labels, so it would have passed even if
+  the RNG call order had changed. It was replaced by the digest-based guard above.
+
+**Environment resolved at T3:** Python 3.13.5, uv 0.11.8, numpy 2.5.3, pandas 3.0.6,
+scikit-learn 1.9.1, fastapi 0.141.1, pydantic 2.13.5; ruff and mypy pinned through `uv.lock`.
+
+**Observed signal for T10/T11 (not yet a finding):** the three strongest features by importance are
+`reflejo_sistemas_culturales` (0.128), `malestar_generalizado` (0.117) and `desenganche` (0.106),
+while the three features carrying a generator modifier — `racismo_sistemico` (0.020),
+`alta_excitacion` (0.022) and `angustia_profunda` (0.042) — are the weakest. That is consistent with
+the modifiers applying to every class equally, so they cannot discriminate. T10 must state whether
+this holds on a held-out split.
