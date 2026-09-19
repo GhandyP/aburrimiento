@@ -1,0 +1,62 @@
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ---------------------------------------------------------------------------
+# Node / React web app
+# ---------------------------------------------------------------------------
+node_modules/
+web/dist/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+
+# ---------------------------------------------------------------------------
+# Flutter / Dart generated artifacts
+# (legacy/ code is archived as source only; nothing here should be committed)
+# ---------------------------------------------------------------------------
+.dart_tool/
+.flutter-plugins-dependencies
+*.iml
+
+# ---------------------------------------------------------------------------
+# Local runtime and tooling state
+# ---------------------------------------------------------------------------
+.atl/
+.codegraph/
+.tmp/
+
+# Agent session transcripts are scratch, not project artifacts
+session-ses_*.md
+
+# ---------------------------------------------------------------------------
+# Environment, local data and secrets
+# ---------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+
+# Captured real samples are local data, never committed
+*.db
+*.sqlite
+*.sqlite3
