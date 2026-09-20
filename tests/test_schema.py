@@ -93,6 +93,10 @@ def test_legacy_names_resolve_to_canonical_ids() -> None:
     }
 
 
+def test_schema_to_payload_round_trips_canonical_json() -> None:
+    assert load_schema(SCHEMA_PATH).to_payload() == schema_payload()
+
+
 def test_schema_loader_exposes_ordered_contract() -> None:
     schema = load_schema(SCHEMA_PATH)
     assert schema.indicator_ids == tuple(EXPECTED_FEATURE_ORDER)

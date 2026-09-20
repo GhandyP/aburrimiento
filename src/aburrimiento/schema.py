@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -59,6 +59,9 @@ class Schema:
     indicators: tuple[Indicator, ...]
     levels: tuple[Level, ...]
     rejected_field_names: Mapping[str, str]
+    rejected_description: str = ""
+    description: str = ""
+    provenance: Mapping[str, str] = field(default_factory=dict)
 
     @property
     def indicator_ids(self) -> tuple[str, ...]:
@@ -88,6 +91,49 @@ class Schema:
             ):
                 return item
         return None
+
+    def to_payload(self) -> dict[str, object]:
+        """Serialize the loaded schema back to the canonical JSON shape."""
+
+        def labels(value: Labels) -> dict[str, str]:
+            return {"es": value.es, **({"en": value.en} if value.en is not None else {})}
+
+        return {
+            "schemaVersion": self.version,
+            "description": self.description,
+            "provenance": dict(self.provenance),
+            "valueRange": {"min": self.min_value, "max": self.max_value},
+            "groups": [
+                {"id": item.id, "order": item.order, "labels": labels(item.labels)}
+                for item in sorted(self.groups, key=lambda item: item.order)
+            ],
+            "indicators": [
+                {
+                    "id": item.id,
+                    "groupId": item.group_id,
+                    "order": item.order,
+                    "labels": labels(item.labels),
+                    "theoreticalBasis": item.theoretical_basis,
+                }
+                for item in sorted(self.indicators, key=lambda item: item.order)
+            ],
+            "levels": [
+                {
+                    "id": item.id,
+                    "order": item.order,
+                    "range": {"min": item.min_value, "max": item.max_value},
+                    "labels": labels(item.labels),
+                    "color": item.color,
+                    "interpretation": item.interpretation,
+                    "recommendedAction": item.recommended_action,
+                }
+                for item in sorted(self.levels, key=lambda item: item.order)
+            ],
+            "rejectedFieldNames": {
+                "description": self.rejected_description,
+                "names": dict(self.rejected_field_names),
+            },
+        }
 
 
 DEFAULT_SCHEMA_PATH = Path(__file__).resolve().parents[2] / "assets" / "schema.json"
@@ -232,7 +278,14 @@ def parse_schema(payload: object) -> Schema:
     if previous_max != max_value:
         raise SchemaError("levels do not cover valueRange")
 
+    description = _text(root.get("description"), "description")
+    raw_provenance = _mapping(root.get("provenance"), "provenance")
+    provenance: dict[str, str] = {}
+    for name, value in raw_provenance.items():
+        provenance[name] = _text(value, f"provenance.{name}")
+
     rejected = _mapping(root.get("rejectedFieldNames"), "rejectedFieldNames")
+    rejected_description = _text(rejected.get("description"), "rejectedFieldNames.description")
     rejected_names = _mapping(rejected.get("names"), "rejectedFieldNames.names")
     rejected_field_names: dict[str, str] = {}
     for name, replacement in rejected_names.items():
@@ -252,6 +305,9 @@ def parse_schema(payload: object) -> Schema:
         tuple(indicators),
         tuple(levels),
         rejected_field_names,
+        rejected_description,
+        description,
+        provenance,
     )
 
 

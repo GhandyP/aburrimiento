@@ -37,7 +37,10 @@ packages = ["src/aburrimiento"]
 line-length = 100
 target-version = "py313"
 # legacy/ holds archived code that is never built, linted or tested.
-extend-exclude = ["legacy", "0.2", "blueplan.md"]
+# The blueprint is excluded because ruff formats the Python code inside its
+# fenced blocks, so an aspirational document would otherwise gate `make check`.
+# T24 moves the file; the glob keeps the exclusion working after the move.
+extend-exclude = ["legacy", "blueplan.md", "**/blueplan*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF"]
