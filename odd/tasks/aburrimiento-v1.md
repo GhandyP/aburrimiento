@@ -573,3 +573,63 @@ trust.
 - The artifact is ~2.3 MB and stays out of version control; `reports/` is committed because it is
   reviewable text.
 
+---
+
+### Phase 3 — API — COMPLETE (T16 moved to Phase 4)
+
+| Task | Commit | Closure evidence observed |
+|---|---|---|
+| T13+T14 | `36484c9` | 70 tests; `/health` reports the served model's identity; CORS allows Vite and refuses an unrelated origin |
+| T15 | `15f8b36` | 75 tests; capture verified against a real server and a real database file, then removed |
+
+**Plan correction — T16 moves to Phase 4.** The original order put `make check` covering the web
+pipeline at the end of Phase 3, but `web/` does not exist until T17. A verification target cannot be
+completed before the thing it verifies. T16 now runs after T17, where web lint, typecheck, test and
+build can actually be wired in. This was a dependency error in the plan, found by executing it.
+
+**The `0.2/` tree is gone.** Its API was replaced, its README described a layout that no longer
+existed, and keeping it would have preserved a second unverified copy of the contract. Removing it also
+removed its ruff exclusion, which is what turns a scheduled deletion into an actual one.
+
+**What that removal exposed:** ruff formats the Python code inside `blueplan.md`'s fenced blocks, so an
+aspirational document was gating `make check` the moment `0.2` was no longer excluded beside it.
+Confirmed directly — `ruff format --check blueplan.md` reports "1 file would be reformatted". The
+exclusion is now explicit, documented next to the rule, and written as a glob so T24 can move the file
+without silently breaking verification again.
+
+**What `/health` reports, verbatim from a real server:**
+
+```json
+{
+  "status": "ok",
+  "schema_version": "1.0.0",
+  "schema_sha256": "704953ce41cfab640dc709eb83714fae37f6a47e5e0ffdf5710783dc9cb49323",
+  "trained_at": "2026-09-20T02:52:30.723973+00:00",
+  "n_samples": 3000,
+  "seed": 42,
+  "sklearn_version": "1.9.1",
+  "metrics": {"accuracy": 0.9783, "kappa": 0.9675, "macro_f1": 0.9785}
+}
+```
+
+A caller can tell which model is being served, and what it scored, without opening a file.
+
+**CORS is verified rather than asserted:** a preflight from `http://localhost:5173` returns
+`access-control-allow-origin: http://localhost:5173`, while a preflight from an unrelated origin
+returns no allow-origin header at all. `allow_origins=["*"]` would have made that test impossible to
+write.
+
+**The capture path exists.** `POST /samples` stores the 14 values, the predicted level, an optional
+observed level and a UTC timestamp; `GET /samples/stats` aggregates them. The table's 18 columns are
+derived from the schema at runtime, and `store.py`'s docstring declares what is deliberately not
+stored: no identifiers, names, free text, IP addresses or device information.
+
+**Deviations:**
+
+- T13 and T14 landed in one commit (`36484c9`): the application and its contract suite are one
+  artifact, and a commit carrying an untested app would have been worse than a larger commit.
+- A worker reported `make check` green while it was red (RUF043, an unescaped regex in a test's
+  `match=`). The parent re-ran the check and caught it. Reported outcomes are re-verified here, not
+  trusted.
+- A commit message for T15 was amended once to remove literal backslash-escapes from a code sample;
+  the recorded hash is the post-amend one.
