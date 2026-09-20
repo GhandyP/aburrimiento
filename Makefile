@@ -1,6 +1,9 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help setup fmt lint typecheck test check clean gen-types evaluate
+.PHONY: help setup fmt lint typecheck test check clean gen-types evaluate train
+
+SAMPLES ?= 3000
+SEED ?= 42
 
 help:  ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -33,4 +36,8 @@ gen-types:  ## Generate TypeScript schema types from the canonical schema
 
 # Evaluate the synthetic classifier and regenerate reports/evaluation.json and reports/evaluation.md.
 evaluate:  ## Measure classifier and baseline performance on synthetic data
-	uv run python -m aburrimiento.evaluate
+	uv run python -c 'from aburrimiento.evaluate import evaluate, write_report; from pathlib import Path; write_report(evaluate(n_samples=$(SAMPLES), seed=$(SEED)), Path("reports"))'
+
+train:  ## Train and save the model artifact, then regenerate matching evaluation reports
+	$(MAKE) evaluate SAMPLES=$(SAMPLES) SEED=$(SEED)
+	uv run python -c 'from aburrimiento.artifacts import main; main()' --samples $(SAMPLES) --seed $(SEED)

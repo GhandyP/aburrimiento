@@ -8,6 +8,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
+from .artifacts import ModelMetadata, TrainedModel, new_metadata
 from .schema import load_schema
 from .synthetic import FEATURE_MODIFIERS, DatasetBundle, SyntheticDataGenerator
 
@@ -20,6 +21,7 @@ class BoredomModel:
         self.feature_names = list(schema.indicator_ids)
         self.levels = list(schema.level_ids)
         self.seed = seed
+        self.metadata: ModelMetadata | None = None
         self.scaler = StandardScaler()
         self.label_encoder = LabelEncoder()
         self.model = RandomForestClassifier(
@@ -43,6 +45,30 @@ class BoredomModel:
         scaled = self.scaler.transform(features)
         encoded = self.model.predict(scaled)
         return cast(list[str], self.label_encoder.inverse_transform(encoded).tolist())
+
+    def save_artifact(self, path: Path, metadata: ModelMetadata | None = None) -> None:
+        artifact = TrainedModel(
+            estimator=self.model,
+            scaler=self.scaler,
+            label_encoder=self.label_encoder,
+            feature_names=self.feature_names,
+            levels=self.levels,
+            metadata=metadata or self.metadata or new_metadata(n_samples=0, seed=self.seed),
+        )
+        artifact.save(path)
+        self.metadata = artifact.metadata
+
+    @classmethod
+    def from_artifact(cls, path: Path) -> BoredomModel:
+        artifact = TrainedModel.load(path)
+        model = cls(seed=artifact.metadata.seed)
+        model.feature_names = artifact.feature_names
+        model.levels = artifact.levels
+        model.scaler = artifact.scaler
+        model.label_encoder = artifact.label_encoder
+        model.model = artifact.estimator
+        model.metadata = artifact.metadata
+        return model
 
     def example_for(self, nivel: str = "alto") -> pd.DataFrame:
         nivel = nivel.lower()
