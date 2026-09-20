@@ -12,8 +12,8 @@ gating `make check`, because ruff formats the Python inside its fenced code bloc
 
 Scope is capped at what can be executed and verified locally. No containers, no Kubernetes, no cloud
 services, no CI provider. Every command in the README must be runnable, and every number it quotes must
-be reproducible by a committed command. `blueplan.md` is reclassified as aspirational reference rather
-than a roadmap.
+be reproducible by a committed command. `docs/blueplan-aspiracional.md` is reclassified as aspirational
+reference rather than a roadmap and carries a status banner and a map to reality.
 
 ## Consequences
 

@@ -1,3 +1,31 @@
+> **Status: aspirational reference. Not a roadmap, and not implemented.**
+>
+> This document describes a production platform — Kubernetes, Triton inference server, Redis, S3, a
+> model registry, GPU optimization, Prometheus, full MLOps. Almost none of it exists in this
+> repository, and most of it cannot be executed or verified on a single machine.
+>
+> It is kept as background reading because the contrast is instructive. The map below states what
+> actually runs today; the rest of this document should be read as a sketch of a different system.
+> The authoritative plan for this repository is `odd/tasks/aburrimiento-v1.md`.
+
+## What actually exists, against this document
+
+| Section of this document | State in this repository |
+|---|---|
+| Architecture philosophy & principles | One principle is enforced: a single hand-written schema source, checked by tests. The rest is unaddressed. |
+| Frontend — Flutter 3.27+ with Clean Architecture and BLoC | Replaced. React + Vite + TypeScript under `web/`: one screen, no state library, no router. The Flutter client is archived in `legacy/flutter/`. |
+| Backend — Python ML/AI services | A minimal FastAPI app in `src/aburrimiento/api.py`. No training service, no model registry, no batch processing, no preprocessing service. |
+| API & integration layer | Five routes: `/health`, `/schema`, `/analyze`, `/samples`, `/samples/stats`. No WebSocket, no GraphQL, no versioning strategy. |
+| Data layer — databases, Redis, S3/MinIO | One SQLite file for captured observations, git-ignored. No Redis, no object storage, no migrations, no warehouse. |
+| Infrastructure & DevOps — Docker, Kubernetes, CI/CD | None. `make check` is the only verification entry point. No container, no cluster, no pipeline. |
+| Model serving — Triton, GPU, ONNX, quantization | None. One Random Forest loaded from a local joblib artifact at API startup. |
+| Monitoring & observability | None beyond `/health`, which reports the served model's schema digest, training metadata and measured metrics. |
+| Security architecture — authentication, RBAC | None. The API is unauthenticated. CORS allows the two local development origins explicitly and refuses others. |
+| Cost optimization | Not applicable: nothing is hosted. |
+| Launch readiness & testing | 99 tests under one command, covering Python and web. The pre-launch checklist below is not met and is not planned under the current scope. |
+
+---
+
 ## Comprehensive ML/AI Analyzer Application Architecture - 2026 Production Blueprint
 
 As your project manager and solutions architect, here's a complete production-ready architecture for your ML/AI analyzer application built with Python (backend/ML) and Flutter (frontend). This architecture is designed for scalability, maintainability, and optimal ML model performance.
