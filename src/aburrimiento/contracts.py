@@ -52,8 +52,34 @@ def build_analyze_request_model(schema: Schema | None = None) -> type[BaseModel]
     return create_model("AnalyzeRequest", datos=(data_model, ...))
 
 
+def _level_type(schema: Schema) -> Any:
+    return cast(Any, Literal)[tuple(schema.level_ids)]
+
+
 def build_analyze_response_model(schema: Schema | None = None) -> type[BaseModel]:
     """Build the analyze response with only declared level ids."""
     resolved = load_schema() if schema is None else schema
-    level_type = cast(Any, Literal)[tuple(resolved.level_ids)]
-    return create_model("AnalyzeResponse", nivel=(level_type, ...))
+    return create_model("AnalyzeResponse", nivel=(_level_type(resolved), ...))
+
+
+def build_sample_capture_model(schema: Schema | None = None) -> type[BaseModel]:
+    """Build the strict real-observation capture payload."""
+    resolved = load_schema() if schema is None else schema
+    data_model = build_analysis_data_model(resolved)
+    return create_model(
+        "SampleCapture",
+        __config__=ConfigDict(extra="forbid"),
+        datos=(data_model, ...),
+        nivel_observado=(_level_type(resolved) | None, None),
+    )
+
+
+def build_sample_stats_response_model(schema: Schema | None = None) -> type[BaseModel]:
+    """Build the sample statistics response with declared level mappings."""
+    level_mapping = dict[str, int]
+    return create_model(
+        "SampleStatsResponse",
+        total=(int, ...),
+        by_predicted_level=(level_mapping, ...),
+        by_observed_level=(level_mapping, ...),
+    )
