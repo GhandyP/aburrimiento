@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from aburrimiento.evaluate import evaluate, format_markdown, write_report
+from aburrimiento.evaluate import (
+    compare_models_across_seeds,
+    evaluate,
+    format_markdown,
+    write_report,
+)
 
 
 def test_evaluate_is_deterministic_and_records_comparison() -> None:
@@ -17,6 +22,30 @@ def test_evaluate_is_deterministic_and_records_comparison() -> None:
     assert "Confusion matrix labels" in format_markdown(first)
     assert "standard deviation" in format_markdown(first)
     assert "tree splits are expected to be invariant" in format_markdown(first)
+
+
+def test_seed_sweep_is_deterministic_and_has_one_valid_row_per_seed() -> None:
+    first = compare_models_across_seeds(n_samples=180, base_seed=7, n_seeds=4)
+    second = compare_models_across_seeds(n_samples=180, base_seed=7, n_seeds=4)
+
+    assert first == second
+    assert len(first.rows) == 4
+    assert [row.seed for row in first.rows] == [7, 8, 9, 10]
+    assert all(0 <= row.forest_accuracy <= 1 for row in first.rows)
+    assert all(0 <= row.logistic_accuracy <= 1 for row in first.rows)
+    assert all(
+        row.difference_percentage_points == (row.logistic_accuracy - row.forest_accuracy) * 100
+        for row in first.rows
+    )
+    assert first.logistic_wins + first.forest_wins + first.ties == 4
+
+
+def test_seed_sweep_does_not_claim_winner_when_mean_is_smaller_than_std() -> None:
+    sweep = compare_models_across_seeds(n_samples=600, base_seed=1, n_seeds=12)
+
+    assert abs(sweep.mean_difference_percentage_points) < sweep.standard_deviation_percentage_points
+    assert "indistinguishable" in sweep.conclusion
+    assert "wins this seed sweep" not in sweep.conclusion
 
 
 def test_write_report_adds_only_write_time_timestamp(tmp_path: Path) -> None:

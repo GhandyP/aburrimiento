@@ -537,9 +537,11 @@ when a field is renamed — cannot exist until the web app is scaffolded in T17.
 | Logistic regression | **0.9800** | **0.9700** | **0.9801** |
 | Dummy (most frequent) | 0.3383 | 0.0000 | 0.1685 |
 
-**The linear baseline beats the forest.** The task is largely linearly separable inside the
-generator, so 120 trees add nothing over a linear model. That is a statement about the generator and
-nothing about boredom, which is what the report's own header says.
+**The linear baseline matches the forest.** The committed twelve-seed sweep finds a mean difference
+(LogReg - forest) of +0.222 percentage points with a 0.416-point standard deviation; logistic regression
+wins 6 seeds, the forest 1, and 5 tie. The models are statistically indistinguishable here, so 120 trees
+add no measured accuracy over a linear model. That is a statement about the generator and nothing about
+boredom, which is what the report's own header says.
 
 **D5 is closed by measurement, not by a cosmetic edit.** The scaled and unscaled runs produce
 identical accuracy, kappa, macro F1 and confusion matrix: the `StandardScaler` is inert before a tree
@@ -874,7 +876,7 @@ Everything below is known, deliberate, and not hidden behind a passing suite.
 
 | Item | Why it stands |
 |---|---|
-| The served model is the worse of the two measured | The random forest scores 0.9783 against the logistic regression's 0.9800. Changing the default would also change the artifact, the guard's exact `predict_proba` decimals and the published report, so it deserves its own task with its own evidence rather than an opportunistic edit. |
+| The comparison claim was corrected | The committed twelve-seed sweep finds the models statistically indistinguishable: logistic regression wins 6 seeds, the forest 1, and 5 tie, with a +0.222-point mean difference and 0.416-point standard deviation. The linear model matches 120 trees, so there is no measured reason to change the served model. |
 | The historical range was never lens-reviewed | `main..HEAD` exceeds the native reviewer's context budget. Phases 0–4 are covered by per-task verification — digests, mutation-tested guards, verbatim 422s, a frozen contract lock — and by nothing else. §11 states this at exactly the strength it has. Only T22 passed four lenses. |
 | `StandardScaler` is kept although measured inert | Scaled and unscaled runs produce identical accuracy, kappa, macro F1 and confusion matrix. It survives because it is part of the artifact and of the byte-level guard; removing it would shift `predict_proba` decimals and invalidate that guard for no observable gain. |
 | The capture path has no interface | `POST /samples` is implemented, tested and verified against a real database, but nothing in the frontend calls it. A route exists; a workflow does not. |

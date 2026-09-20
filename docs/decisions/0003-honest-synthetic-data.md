@@ -22,8 +22,11 @@ else: no identifiers, no names, no free text, no IP addresses, no device informa
 ## Consequences
 
 - Measured on 3000 samples with seed 42: random forest 0.9783 accuracy, logistic regression 0.9800, and
-  a most-frequent dummy floor at 0.3383. The linear baseline beats the 120-tree forest, so the task is
-  largely linearly separable inside the generator.
+  a most-frequent dummy floor at 0.3383. The committed twelve-seed sweep finds that logistic regression
+  matches the 120-tree forest: mean difference (LogReg - forest) is +0.222 percentage points with a
+  0.416-point standard deviation; logistic regression wins 6 seeds, the forest 1, and 5 tie. The models
+  are statistically indistinguishable here, so the supported finding is that a linear model matches 120
+  trees, not that it wins; the task is largely linearly separable inside the generator.
 - The two features carrying the most aggressive generator modifiers are the least used by the model —
   `racismo_sistemico` 0.0142 and `alta_excitacion` 0.0137 against `frustracion_de_agencia` 0.1056 —
   because a modifier applied to every class equally compresses a feature without separating classes.

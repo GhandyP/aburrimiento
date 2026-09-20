@@ -73,7 +73,7 @@
     "reflejo_sistemas_culturales": 0.07208647236790211,
     "restriccion_de_libertad": 0.06330346665492954
   },
-  "generated_at": "2026-09-20T02:53:22.095060+00:00",
+  "generated_at": "2026-09-20T18:21:21.798055+00:00",
   "logistic_regression": {
     "accuracy": 0.98,
     "confusion_matrix": [
@@ -138,6 +138,102 @@
     "There is no external validation anywhere in this repository."
   ],
   "seed": 42,
+  "seed_sweep": {
+    "base_seed": 1,
+    "conclusion": "The two models are statistically indistinguishable on this generator; the linear model matches the 120-tree forest.",
+    "forest_wins": 1,
+    "logistic_wins": 6,
+    "mean_difference_percentage_points": 0.22222222222222088,
+    "n_seeds": 12,
+    "rows": [
+      {
+        "difference_percentage_points": 0.0,
+        "difference_samples": 0,
+        "forest_accuracy": 0.9866666666666667,
+        "logistic_accuracy": 0.9866666666666667,
+        "seed": 1
+      },
+      {
+        "difference_percentage_points": 0.0,
+        "difference_samples": 0,
+        "forest_accuracy": 0.9783333333333334,
+        "logistic_accuracy": 0.9783333333333334,
+        "seed": 2
+      },
+      {
+        "difference_percentage_points": 0.0,
+        "difference_samples": 0,
+        "forest_accuracy": 0.985,
+        "logistic_accuracy": 0.985,
+        "seed": 3
+      },
+      {
+        "difference_percentage_points": 1.3333333333333308,
+        "difference_samples": 8,
+        "forest_accuracy": 0.97,
+        "logistic_accuracy": 0.9833333333333333,
+        "seed": 4
+      },
+      {
+        "difference_percentage_points": 0.6666666666666599,
+        "difference_samples": 4,
+        "forest_accuracy": 0.9766666666666667,
+        "logistic_accuracy": 0.9833333333333333,
+        "seed": 5
+      },
+      {
+        "difference_percentage_points": 0.16666666666667052,
+        "difference_samples": 1,
+        "forest_accuracy": 0.9883333333333333,
+        "logistic_accuracy": 0.99,
+        "seed": 6
+      },
+      {
+        "difference_percentage_points": 0.0,
+        "difference_samples": 0,
+        "forest_accuracy": 0.9766666666666667,
+        "logistic_accuracy": 0.9766666666666667,
+        "seed": 7
+      },
+      {
+        "difference_percentage_points": 0.1666666666666594,
+        "difference_samples": 1,
+        "forest_accuracy": 0.9866666666666667,
+        "logistic_accuracy": 0.9883333333333333,
+        "seed": 8
+      },
+      {
+        "difference_percentage_points": 0.5000000000000004,
+        "difference_samples": 3,
+        "forest_accuracy": 0.9833333333333333,
+        "logistic_accuracy": 0.9883333333333333,
+        "seed": 9
+      },
+      {
+        "difference_percentage_points": -0.33333333333334103,
+        "difference_samples": -2,
+        "forest_accuracy": 0.9916666666666667,
+        "logistic_accuracy": 0.9883333333333333,
+        "seed": 10
+      },
+      {
+        "difference_percentage_points": 0.16666666666667052,
+        "difference_samples": 1,
+        "forest_accuracy": 0.9833333333333333,
+        "logistic_accuracy": 0.985,
+        "seed": 11
+      },
+      {
+        "difference_percentage_points": 0.0,
+        "difference_samples": 0,
+        "forest_accuracy": 0.9833333333333333,
+        "logistic_accuracy": 0.9833333333333333,
+        "seed": 12
+      }
+    ],
+    "standard_deviation_percentage_points": 0.4157397096415487,
+    "ties": 5
+  },
   "split_sizes": {
     "test": 600,
     "train": 1800,

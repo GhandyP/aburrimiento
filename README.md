@@ -95,8 +95,12 @@ The committed [evaluation report](reports/evaluation.md) uses 3,000 synthetic sa
 | Logistic regression | 0.980000 | 0.969997 | 0.980146 |
 | Dummy (most frequent) | 0.338333 | 0.000000 | 0.168535 |
 
-The linear baseline beats the 120-tree forest. Inside this generator, that means the task is largely
-linearly separable; it says nothing about boredom in the world.
+Across twelve seeds, logistic regression matches the 120-tree forest: its mean advantage is
+0.222 percentage points with a 0.416-point standard deviation, with logistic regression winning 6
+seeds, the forest winning 1, and 5 ties. The models are statistically indistinguishable on this
+generator; the supported finding is that the linear model matches 120 trees, not that it wins. This
+means the task is largely linearly separable inside the generator; it says nothing about boredom in
+the world.
 
 ## API contract
 

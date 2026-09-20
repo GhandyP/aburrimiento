@@ -65,6 +65,28 @@ class ScalerComparison:
 
 
 @dataclass(frozen=True)
+class SeedSweepRow:
+    seed: int
+    forest_accuracy: float
+    logistic_accuracy: float
+    difference_samples: int
+    difference_percentage_points: float
+
+
+@dataclass(frozen=True)
+class SeedSweepReport:
+    base_seed: int
+    n_seeds: int
+    rows: list[SeedSweepRow]
+    mean_difference_percentage_points: float
+    standard_deviation_percentage_points: float
+    logistic_wins: int
+    forest_wins: int
+    ties: int
+    conclusion: str
+
+
+@dataclass(frozen=True)
 class EvaluationReport:
     seed: int
     n_samples: int
@@ -73,6 +95,7 @@ class EvaluationReport:
     tree: ScalerComparison
     logistic_regression: ModelReport
     dummy: ModelReport
+    seed_sweep: SeedSweepReport
     notes: list[str] = field(default_factory=lambda: list(NOTES))
 
     def to_dict(self) -> dict[str, object]:
@@ -204,6 +227,7 @@ def evaluate(
             scaled.cv_std != unscaled.cv_std,
         )
     )
+    sweep = compare_models_across_seeds(resolved, n_samples=n_samples)
     return EvaluationReport(
         seed=seed,
         n_samples=n_samples,
@@ -223,6 +247,83 @@ def evaluate(
         tree=ScalerComparison(scaled, unscaled, metrics_differ),
         logistic_regression=logistic,
         dummy=dummy,
+        seed_sweep=sweep,
+    )
+
+
+def compare_models_across_seeds(
+    schema: Schema | None = None,
+    n_samples: int = 3000,
+    base_seed: int = 1,
+    n_seeds: int = 12,
+) -> SeedSweepReport:
+    """Compare the forest and linear baseline over deterministic seeded splits."""
+    if n_seeds < 1:
+        raise ValueError("n_seeds must be at least 1")
+    resolved = load_schema() if schema is None else schema
+    feature_names = list(resolved.indicator_ids)
+    labels = list(resolved.level_ids)
+    rows: list[SeedSweepRow] = []
+    for seed in range(base_seed, base_seed + n_seeds):
+        dataset = SyntheticDataGenerator(feature_names, labels, seed).generate(n_samples)
+        x_train_val, x_test, y_train_val, y_test = train_test_split(
+            dataset.features,
+            dataset.labels,
+            test_size=0.2,
+            random_state=seed,
+            stratify=dataset.labels,
+        )
+        x_train, _, y_train, _ = train_test_split(
+            x_train_val,
+            y_train_val,
+            test_size=0.25,
+            random_state=seed,
+            stratify=y_train_val,
+        )
+        forest = _tree(False, seed).fit(x_train, y_train)
+        logistic = Pipeline(
+            [
+                ("scaler", StandardScaler()),
+                ("classifier", LogisticRegression(max_iter=1000, random_state=seed)),
+            ]
+        ).fit(x_train, y_train)
+        forest_accuracy = float(accuracy_score(y_test, forest.predict(x_test)))
+        logistic_accuracy = float(accuracy_score(y_test, logistic.predict(x_test)))
+        difference_samples = round((logistic_accuracy - forest_accuracy) * len(y_test))
+        rows.append(
+            SeedSweepRow(
+                seed=seed,
+                forest_accuracy=forest_accuracy,
+                logistic_accuracy=logistic_accuracy,
+                difference_samples=difference_samples,
+                difference_percentage_points=(logistic_accuracy - forest_accuracy) * 100,
+            )
+        )
+    differences = [row.difference_percentage_points for row in rows]
+    mean_difference = float(pd.Series(differences).mean())
+    standard_deviation = float(pd.Series(differences).std(ddof=0))
+    logistic_wins = sum(row.difference_samples > 0 for row in rows)
+    forest_wins = sum(row.difference_samples < 0 for row in rows)
+    ties = sum(row.difference_samples == 0 for row in rows)
+    if abs(mean_difference) < standard_deviation:
+        conclusion = (
+            "The two models are statistically indistinguishable on this generator; "
+            "the linear model matches the 120-tree forest."
+        )
+    elif mean_difference > 0:
+        conclusion = "The logistic regression wins this seed sweep."
+    else:
+        conclusion = "The 120-tree forest wins this seed sweep."
+    return SeedSweepReport(
+        base_seed=base_seed,
+        n_seeds=n_seeds,
+        rows=rows,
+        mean_difference_percentage_points=mean_difference,
+        standard_deviation_percentage_points=standard_deviation,
+        logistic_wins=logistic_wins,
+        forest_wins=forest_wins,
+        ties=ties,
+        conclusion=conclusion,
     )
 
 
@@ -290,6 +391,34 @@ def format_markdown(report: EvaluationReport) -> str:
     lines.extend(_markdown_model(report.dummy))
     lines.extend(
         [
+            "",
+            "## Seed-sweep comparison",
+            "",
+            f"- Seeds: `{report.seed_sweep.base_seed}` through `"
+            f"{report.seed_sweep.base_seed + report.seed_sweep.n_seeds - 1}` "
+            f"({report.seed_sweep.n_seeds} total)",
+            "- Each row uses the same stratified train/validation/test split and compares "
+            "the unscaled 120-tree forest with logistic regression.",
+            "",
+            "| Seed | Forest accuracy | Logistic accuracy | Difference (samples) | "
+            "Difference (points) |",
+            "|---:|---:|---:|---:|---:|",
+        ]
+    )
+    lines.extend(
+        f"| {row.seed} | {row.forest_accuracy:.6f} | {row.logistic_accuracy:.6f} | "
+        f"{row.difference_samples:+d} | {row.difference_percentage_points:+.3f} |"
+        for row in report.seed_sweep.rows
+    )
+    lines.extend(
+        [
+            "",
+            f"- Mean difference (LogReg - forest): "
+            f"`{report.seed_sweep.mean_difference_percentage_points:+.3f}` percentage points; "
+            f"standard deviation: `{report.seed_sweep.standard_deviation_percentage_points:.3f}`.",
+            f"- Wins: logistic regression `{report.seed_sweep.logistic_wins}`, "
+            f"forest `{report.seed_sweep.forest_wins}`, ties `{report.seed_sweep.ties}`.",
+            f"- Conclusion: {report.seed_sweep.conclusion}",
             "",
             "A small gap between the tree model and the linear baseline is evidence that the "
             "classification task is largely linearly separable in the generator, which says "

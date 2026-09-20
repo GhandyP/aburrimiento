@@ -63,6 +63,30 @@
   | alto | 0.000000 | 0.000000 | 0.000000 | 197 |
 - Confusion matrix: `[[0, 200, 0], [0, 203, 0], [0, 197, 0]]`
 
+## Seed-sweep comparison
+
+- Seeds: `1` through `12` (12 total)
+- Each row uses the same stratified train/validation/test split and compares the unscaled 120-tree forest with logistic regression.
+
+| Seed | Forest accuracy | Logistic accuracy | Difference (samples) | Difference (points) |
+|---:|---:|---:|---:|---:|
+| 1 | 0.986667 | 0.986667 | +0 | +0.000 |
+| 2 | 0.978333 | 0.978333 | +0 | +0.000 |
+| 3 | 0.985000 | 0.985000 | +0 | +0.000 |
+| 4 | 0.970000 | 0.983333 | +8 | +1.333 |
+| 5 | 0.976667 | 0.983333 | +4 | +0.667 |
+| 6 | 0.988333 | 0.990000 | +1 | +0.167 |
+| 7 | 0.976667 | 0.976667 | +0 | +0.000 |
+| 8 | 0.986667 | 0.988333 | +1 | +0.167 |
+| 9 | 0.983333 | 0.988333 | +3 | +0.500 |
+| 10 | 0.991667 | 0.988333 | -2 | -0.333 |
+| 11 | 0.983333 | 0.985000 | +1 | +0.167 |
+| 12 | 0.983333 | 0.983333 | +0 | +0.000 |
+
+- Mean difference (LogReg - forest): `+0.222` percentage points; standard deviation: `0.416`.
+- Wins: logistic regression `6`, forest `1`, ties `5`.
+- Conclusion: The two models are statistically indistinguishable on this generator; the linear model matches the 120-tree forest.
+
 A small gap between the tree model and the linear baseline is evidence that the classification task is largely linearly separable in the generator, which says something about the generator and nothing about boredom. The dummy floor is reported with its measured accuracy above, not characterized as trivial without that measurement.
 
 ## Feature importances
