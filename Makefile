@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help setup fmt lint typecheck test check web-check clean gen-types evaluate train run
+.PHONY: help setup fmt lint typecheck test check web-check clean gen-types gen-docs web-setup web-dev evaluate train run
 
 SAMPLES ?= 3000
 SEED ?= 42
@@ -42,6 +42,15 @@ clean:  ## Remove caches and build output
 
 gen-types:  ## Generate TypeScript schema types from the canonical schema
 	uv run python tools/gen_web_types.py
+
+gen-docs:  ## Generate the README indicator table from the canonical schema
+	uv run python tools/gen_readme_table.py
+
+web-setup:  ## Install web dependencies from the lockfile
+	npm ci --prefix web
+
+web-dev:  ## Run the Vite development server
+	npm run dev --prefix web
 
 # Evaluate the synthetic classifier and regenerate reports/evaluation.json and reports/evaluation.md.
 evaluate:  ## Measure classifier and baseline performance on synthetic data
