@@ -27,7 +27,7 @@ uvicorn main:app --app-dir 0.2/api --host 127.0.0.1 --port 8000
 ```bash
 curl -X POST http://127.0.0.1:8000/analyze \
   -H "Content-Type: application/json" \
-  -d '{"datos": {"reflejo_sistemas_culturales": 0.8, "productividad_capitalista": 0.75, "alienacion_neoliberal": 0.85, "racismo_sistemico": 0.6, "malestar_generalizado": 0.9, "carencia_sentido": 0.85, "restriccion_libertad": 0.8, "frustracion_agencia": 0.9, "desenganche": 0.85, "alta_excitacion": 0.5, "inatencion": 0.8, "percepcion_tiempo_lenta": 0.9, "estrategias_bloqueadas": 0.85, "angustia_profunda": 0.8}}'
+  -d '{"datos": {"reflejo_sistemas_culturales": 0.8, "productividad_capitalista": 0.75, "alienacion_neoliberal": 0.85, "racismo_sistemico": 0.6, "malestar_generalizado": 0.9, "carencia_de_sentido": 0.85, "restriccion_de_libertad": 0.8, "frustracion_de_agencia": 0.9, "desenganche": 0.85, "alta_excitacion": 0.5, "inatencion": 0.8, "percepcion_tiempo_lenta": 0.9, "estrategias_bloqueadas": 0.85, "angustia_profunda": 0.8}}'
 ```
 
 ## Frontend status
@@ -41,3 +41,7 @@ the `curl` example above is the reference client.
 
 Note that this iteration's `python/` and `api/` directories are themselves being migrated into the
 `src/aburrimiento/` package; see `odd/tasks/aburrimiento-v1.md`.
+
+Field names above come from the canonical schema at `assets/schema.json`. The short forms used by the
+archived Dart clients (`carencia_sentido`, `restriccion_libertad`, `frustracion_agencia`) are rejected
+with a 422 that names the canonical replacement.
