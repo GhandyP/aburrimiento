@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help setup fmt lint typecheck test check clean gen-types evaluate train run
+.PHONY: help setup fmt lint typecheck test check web-check clean gen-types evaluate train run
 
 SAMPLES ?= 3000
 SEED ?= 42
@@ -28,6 +28,13 @@ test:  ## Run the test suite
 	uv run pytest
 
 check: lint typecheck test  ## Run every verification; must be green before committing
+
+web-check:  ## Run the web lint, typecheck, tests and production build
+	@if [ ! -d web/node_modules ]; then npm ci --prefix web; fi
+	npm run lint --prefix web
+	npm run typecheck --prefix web
+	npm test --prefix web
+	npm run build --prefix web
 
 clean:  ## Remove caches and build output
 	rm -rf .pytest_cache .mypy_cache .ruff_cache dist build
