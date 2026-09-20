@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help setup fmt lint typecheck test check clean gen-types
+.PHONY: help setup fmt lint typecheck test check clean gen-types evaluate
 
 help:  ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -30,3 +30,7 @@ clean:  ## Remove caches and build output
 
 gen-types:  ## Generate TypeScript schema types from the canonical schema
 	uv run python tools/gen_web_types.py
+
+# Evaluate the synthetic classifier and regenerate reports/evaluation.json and reports/evaluation.md.
+evaluate:  ## Measure classifier and baseline performance on synthetic data
+	uv run python -m aburrimiento.evaluate

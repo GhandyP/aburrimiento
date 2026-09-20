@@ -1,0 +1,265 @@
+{
+  "dummy": {
+    "accuracy": 0.3383333333333333,
+    "confusion_matrix": [
+      [
+        0,
+        200,
+        0
+      ],
+      [
+        0,
+        203,
+        0
+      ],
+      [
+        0,
+        197,
+        0
+      ]
+    ],
+    "cv_mean": 0.3388888888888889,
+    "cv_scores": [
+      0.3388888888888889,
+      0.3388888888888889,
+      0.3388888888888889,
+      0.3388888888888889,
+      0.3388888888888889
+    ],
+    "cv_std": 0.0,
+    "kappa": 0.0,
+    "labels": [
+      "bajo",
+      "medio",
+      "alto"
+    ],
+    "macro_f1": 0.16853466168534662,
+    "name": "dummy_most_frequent",
+    "per_class": {
+      "alto": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 197
+      },
+      "bajo": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 200
+      },
+      "medio": {
+        "f1": 0.5056039850560399,
+        "precision": 0.3383333333333333,
+        "recall": 1.0,
+        "support": 203
+      }
+    },
+    "weighted_f1": 0.17106268161062682
+  },
+  "feature_importances": {
+    "alienacion_neoliberal": 0.07899944053489412,
+    "alta_excitacion": 0.013653054263811377,
+    "angustia_profunda": 0.06977156403366294,
+    "carencia_de_sentido": 0.09281542780602912,
+    "desenganche": 0.07120606819327217,
+    "estrategias_bloqueadas": 0.08719434752679592,
+    "frustracion_de_agencia": 0.10561652737618041,
+    "inatencion": 0.09427096044557677,
+    "malestar_generalizado": 0.09582365920485982,
+    "percepcion_tiempo_lenta": 0.07348553461854432,
+    "productividad_capitalista": 0.06760244718170769,
+    "racismo_sistemico": 0.014171029791833852,
+    "reflejo_sistemas_culturales": 0.07208647236790211,
+    "restriccion_de_libertad": 0.06330346665492954
+  },
+  "generated_at": "2026-09-20T02:43:43.120434+00:00",
+  "logistic_regression": {
+    "accuracy": 0.98,
+    "confusion_matrix": [
+      [
+        193,
+        7,
+        0
+      ],
+      [
+        5,
+        198,
+        0
+      ],
+      [
+        0,
+        0,
+        197
+      ]
+    ],
+    "cv_mean": 0.9844444444444445,
+    "cv_scores": [
+      0.9888888888888889,
+      0.975,
+      0.9944444444444445,
+      0.9777777777777777,
+      0.9861111111111112
+    ],
+    "cv_std": 0.007157832625958428,
+    "kappa": 0.96999699969997,
+    "labels": [
+      "bajo",
+      "medio",
+      "alto"
+    ],
+    "macro_f1": 0.980145827175091,
+    "name": "logistic_regression",
+    "per_class": {
+      "alto": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 197
+      },
+      "bajo": {
+        "f1": 0.9698492462311558,
+        "precision": 0.9747474747474747,
+        "recall": 0.965,
+        "support": 200
+      },
+      "medio": {
+        "f1": 0.9705882352941176,
+        "precision": 0.9658536585365853,
+        "recall": 0.9753694581280788,
+        "support": 203
+      }
+    },
+    "weighted_f1": 0.9799987683515617
+  },
+  "n_samples": 3000,
+  "notes": [
+    "The labels are drawn from the same class-conditional distributions the model then learns, so accuracy measured here is a measure of self-consistency of the generator, not evidence about boredom in the world.",
+    "There is no external validation anywhere in this repository."
+  ],
+  "seed": 42,
+  "split_sizes": {
+    "test": 600,
+    "train": 1800,
+    "validation": 600
+  },
+  "tree": {
+    "metrics_differ": false,
+    "scaled": {
+      "accuracy": 0.9783333333333334,
+      "confusion_matrix": [
+        [
+          193,
+          7,
+          0
+        ],
+        [
+          6,
+          197,
+          0
+        ],
+        [
+          0,
+          0,
+          197
+        ]
+      ],
+      "cv_mean": 0.9805555555555557,
+      "cv_scores": [
+        0.9861111111111112,
+        0.9722222222222222,
+        0.9833333333333333,
+        0.9722222222222222,
+        0.9888888888888889
+      ],
+      "cv_std": 0.007027283689263085,
+      "kappa": 0.96749715600115,
+      "labels": [
+        "bajo",
+        "medio",
+        "alto"
+      ],
+      "macro_f1": 0.9784925048082943,
+      "name": "random_forest_scaled",
+      "per_class": {
+        "alto": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "support": 197
+        },
+        "bajo": {
+          "f1": 0.9674185463659147,
+          "precision": 0.9698492462311558,
+          "recall": 0.965,
+          "support": 200
+        },
+        "medio": {
+          "f1": 0.9680589680589681,
+          "precision": 0.9656862745098039,
+          "recall": 0.9704433497536946,
+          "support": 203
+        }
+      },
+      "weighted_f1": 0.9783327996485891
+    },
+    "unscaled": {
+      "accuracy": 0.9783333333333334,
+      "confusion_matrix": [
+        [
+          193,
+          7,
+          0
+        ],
+        [
+          6,
+          197,
+          0
+        ],
+        [
+          0,
+          0,
+          197
+        ]
+      ],
+      "cv_mean": 0.9805555555555557,
+      "cv_scores": [
+        0.9861111111111112,
+        0.9722222222222222,
+        0.9833333333333333,
+        0.9722222222222222,
+        0.9888888888888889
+      ],
+      "cv_std": 0.007027283689263085,
+      "kappa": 0.96749715600115,
+      "labels": [
+        "bajo",
+        "medio",
+        "alto"
+      ],
+      "macro_f1": 0.9784925048082943,
+      "name": "random_forest_unscaled",
+      "per_class": {
+        "alto": {
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "support": 197
+        },
+        "bajo": {
+          "f1": 0.9674185463659147,
+          "precision": 0.9698492462311558,
+          "recall": 0.965,
+          "support": 200
+        },
+        "medio": {
+          "f1": 0.9680589680589681,
+          "precision": 0.9656862745098039,
+          "recall": 0.9704433497536946,
+          "support": 203
+        }
+      },
+      "weighted_f1": 0.9783327996485891
+    }
+  }
+}
