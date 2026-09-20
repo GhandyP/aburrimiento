@@ -473,3 +473,47 @@ while the three features carrying a generator modifier — `racismo_sistemico` (
 `alta_excitacion` (0.022) and `angustia_profunda` (0.042) — are the weakest. That is consistent with
 the modifiers applying to every class equally, so they cannot discriminate. T10 must state whether
 this holds on a held-out split.
+
+---
+
+### Phase 1 — Canonical schema — COMPLETE
+
+| Task | Commit | Closure evidence observed |
+|---|---|---|
+| T5 | `cab17e7` | `assets/schema.json` verified faithful to both CSVs and to the model's pinned feature order before it was committed |
+| T6 | `cab17e7` | `schema.py` is the only module that opens the file; both CSVs retired; baseline digests unchanged |
+| T7 | `d95e97e` | 14 fields derived at runtime, `additionalProperties: false`, 0–1 bounds; legacy names rejected with their replacement |
+| T8 | `ff1bba3` | Generator deterministic across runs (identical SHA-256); drift test fails on a stale file |
+
+**Deviations from this plan, and why:**
+
+- **T5 and T6 landed in one commit** (`cab17e7`). `tests/test_schema.py` carries both the data
+  invariants and the loader tests; separating them would have required an intermediate commit with a
+  half-tested loader. The shared test file is the reason, not the size.
+- **T7 also corrected `0.2/README.md`**, which documented a `curl` request using the rejected legacy
+  names. The strict contract would have answered that documented example with a 422: the
+  documentation contradicted the code it documented.
+- **`cli.py` changed its injectable flag** from `--data-dir` to `--schema-path`, because the
+  injectable path now points at the schema rather than at a data directory.
+- **`assets/estructura_aburrimiento.json` was renamed** to `assets/conceptual-framework.json`, content
+  untouched. It is a theoretical taxonomy, and the old name invited it to be read as the runtime
+  schema.
+
+**Verified contract behavior — production evidence, not a claim:**
+
+```
+valid payload        -> 200 {"nivel":"alto"}
+carencia_sentido     -> 422 "carencia_sentido is a rejected field name; use carencia_de_sentido"
+desenganche = 1.5    -> 422 less_than_equal at body.datos.desenganche
+inatencion missing   -> 422 missing at body.datos.inatencion
+```
+
+**Zero-duplication check:** the 14 indicator ids now appear in exactly one hand-written place, the
+schema file itself. `src/aburrimiento/` derives them at runtime, and `web/src/generated/schema.ts` is
+produced from the same source by a generator whose output is drift-checked.
+
+**Test count:** 19 after T6, 29 after T8.
+
+**Open item carried into Phase 4:** §6 condition 4 requires drift to fail a test in Python *and* in
+TypeScript. The Python half exists (pytest drift test). The TypeScript half — a typecheck that breaks
+when a field is renamed — cannot exist until the web app is scaffolded in T17.
