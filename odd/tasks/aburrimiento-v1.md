@@ -735,3 +735,65 @@ requirement. A test asserts the default still resolves when the variable is abse
 97 tests — 75 Python, 22 web — green under one command. 242 files changed across the branch,
 9,929 insertions and 2,309 deletions, most of the churn being the 158 archived files and the deleted
 `0.2/` tree.
+
+---
+
+## 11. Native review: what it covered and what it could not — 2026-09-20
+
+The review switch is enabled, so the preflight was run. The outcome is recorded here because the
+limit belongs to the tooling, not to the work.
+
+### What was reviewed
+
+The pending change to this plan document was submitted as a workspace candidate. It closed
+**approved**: risk tier `low`, single reason `non_executable_only`, zero lenses required, no consent
+required, and its authority was acknowledged and burned
+(`burn_evidence: gentle-ai.review-acknowledged/v1`). The mechanism works on candidates that fit.
+
+### What could not be reviewed
+
+The committed range `main..HEAD` — 22 commits, 9,929 insertions — was offered by the provider as a
+`base-diff` candidate and refused with:
+
+```
+code: lens_context_budget_exceeded
+phase: preflight
+mutation_outcome: not_started
+authority_applicability: not_evaluated
+```
+
+No authority was created, so nothing was abandoned or repaired, and the failure is retry-safe. The
+provider's own explanation: the complete reviewer evidence exceeds the native context budget, that
+evidence is **never truncated**, and retrying the identical candidate cannot succeed. Its suggested
+remedy is to split the work into a chained sequence of smaller reviewable commits.
+
+**Why slicing by phase was not an option either.** The committed projection always spans
+`baseRef → HEAD`; there is no way to fix the upper bound. An earlier proposal in this plan's
+conversation — review phase by phase — was never implementable, and offering it was a mistake. What
+actually inflates the candidate is not the new code but the 158 files archived out of `main` plus the
+deleted `0.2/` tree spanning five platform directories: hundreds of file-level entries that are
+moves and removals, not work.
+
+### Decision taken
+
+Review the candidates that fit from here on — the Phase 5 documents are new, small, self-contained
+files — and leave the historical range covered by the verification actually performed per task
+rather than by a lens review that cannot hold it:
+
+- the migration in T4, proven by byte-identical dataset digests, feature importances and probabilities
+  against the legacy module recovered from git, with the guard mutation-tested;
+- the canonical schema swap in T5/T6, proven by those same digests staying identical;
+- the strict contract in T7, proven by four verbatim 422 responses each naming the offending field;
+- the honest evaluation in T10/T11, where every published number comes from a committed command;
+- the artifact loading in T12, proven against a real server with a schema digest that refuses a
+  mismatched model;
+- the frontend contract in T21, proven by a rename that fails the suite and a restore that returns the
+  exact sha256.
+
+That is **not** equivalent to an independent four-lens review, and it is not recorded as if it were.
+It is the evidence that exists, stated at the strength it actually has.
+
+### Consequence for the remaining tasks
+
+Each remaining task is implemented and then submitted as its own workspace candidate **before** it is
+committed, so the review sees a small diff instead of an accumulating branch.
