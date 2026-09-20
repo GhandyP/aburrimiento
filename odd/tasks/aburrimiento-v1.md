@@ -797,3 +797,87 @@ It is the evidence that exists, stated at the strength it actually has.
 
 Each remaining task is implemented and then submitted as its own workspace candidate **before** it is
 committed, so the review sees a small diff instead of an accumulating branch.
+
+---
+
+### Phase 5 — Documentation and closure — COMPLETE
+
+| Task | Commit | Closure evidence observed |
+|---|---|---|
+| T22 | `40924e4` | README table generated, drift test fails on a stale row, reviewed by all four lenses |
+| T23 | `9a6b9d2` | Four ADRs carrying the verified numbers; index links resolve |
+| T24 | `924df2b` | 2,652-line body untouched; the lint exclusion's cause pinned down by removing it |
+| T25 | this commit | The end-to-end run below, pasted verbatim |
+
+**All 25 tasks are closed**, each with a commit hash and an observed closure criterion.
+
+#### The end-to-end run, verbatim
+
+```
+$ make train
+uv run python -c 'from aburrimiento.artifacts import main; main()' --samples 3000 --seed 42
+Saved model artifact to models/model.joblib          # 2,291,589 bytes
+
+$ uv run uvicorn aburrimiento.api:app --host 127.0.0.1 --port 8199
+
+$ curl -s http://127.0.0.1:8199/health
+{
+    "status": "ok",
+    "schema_version": "1.0.0",
+    "schema_sha256": "704953ce41cfab640dc709eb83714fae37f6a47e5e0ffdf5710783dc9cb49323",
+    "trained_at": "2026-09-20T16:08:53.511063+00:00",
+    "n_samples": 3000,
+    "seed": 42,
+    "sklearn_version": "1.9.1",
+    "metrics": {
+        "accuracy": 0.9783333333333334,
+        "kappa": 0.96749715600115,
+        "macro_f1": 0.9784925048082943
+    }
+}
+
+$ curl -s -X POST http://127.0.0.1:8199/analyze -H 'Content-Type: application/json' \
+    -d '{"datos":{"reflejo_sistemas_culturales":0.9,"productividad_capitalista":0.85,"alienacion_neoliberal":0.9,"racismo_sistemico":0.7,"malestar_generalizado":0.9,"carencia_de_sentido":0.85,"restriccion_de_libertad":0.8,"frustracion_de_agencia":0.9,"desenganche":0.9,"alta_excitacion":0.6,"inatencion":0.85,"percepcion_tiempo_lenta":0.9,"estrategias_bloqueadas":0.9,"angustia_profunda":0.85}}'
+{"nivel":"alto"}
+
+$ curl -s -X POST http://127.0.0.1:8199/samples -H 'Content-Type: application/json' \
+    -d '{"datos":{"reflejo_sistemas_culturales":0.2,"productividad_capitalista":0.25,"alienacion_neoliberal":0.2,"racismo_sistemico":0.3,"malestar_generalizado":0.25,"carencia_de_sentido":0.2,"restriccion_de_libertad":0.3,"frustracion_de_agencia":0.25,"desenganche":0.2,"alta_excitacion":0.3,"inatencion":0.25,"percepcion_tiempo_lenta":0.2,"estrategias_bloqueadas":0.25,"angustia_profunda":0.3},"nivel_observado":"bajo"}'
+{"id":1,"nivel":"bajo"}
+
+$ curl -s http://127.0.0.1:8199/samples/stats
+{
+    "total": 1,
+    "by_predicted_level": {"bajo": 1, "medio": 0, "alto": 0},
+    "by_observed_level": {"bajo": 1, "medio": 0, "alto": 0}
+}
+
+$ curl -s -X POST http://127.0.0.1:8199/analyze -H 'Content-Type: application/json' \
+    -d '{"datos":{"reflejo_sistemas_culturales":0.5,"carencia_sentido":0.5}}'
+{"detail":[{"type":"value_error","loc":["body","datos"],
+  "msg":"Value error, carencia_sentido is a rejected field name; use carencia_de_sentido"}]}
+```
+
+What the run demonstrates, in order: the artifact is **loaded rather than trained**, and
+`/health` reports which model is being served together with what it measured; a full 14-field
+analysis returns a level; the capture path stores a real observation with a human-supplied label; the
+aggregate reflects both the prediction and the label; and a rejected legacy name is answered with the
+canonical replacement rather than silently accepted.
+
+`make check` at the end of the branch: **99 tests** — 77 Python and 22 web — covering ruff format and
+lint, mypy in strict mode, pytest, and the web lint, typecheck, tests and production build.
+
+---
+
+## 12. Remaining debt, stated plainly
+
+Everything below is known, deliberate, and not hidden behind a passing suite.
+
+| Item | Why it stands |
+|---|---|
+| The served model is the worse of the two measured | The random forest scores 0.9783 against the logistic regression's 0.9800. Changing the default would also change the artifact, the guard's exact `predict_proba` decimals and the published report, so it deserves its own task with its own evidence rather than an opportunistic edit. |
+| The historical range was never lens-reviewed | `main..HEAD` exceeds the native reviewer's context budget. Phases 0–4 are covered by per-task verification — digests, mutation-tested guards, verbatim 422s, a frozen contract lock — and by nothing else. §11 states this at exactly the strength it has. Only T22 passed four lenses. |
+| `StandardScaler` is kept although measured inert | Scaled and unscaled runs produce identical accuracy, kappa, macro F1 and confusion matrix. It survives because it is part of the artifact and of the byte-level guard; removing it would shift `predict_proba` decimals and invalidate that guard for no observable gain. |
+| The capture path has no interface | `POST /samples` is implemented, tested and verified against a real database, but nothing in the frontend calls it. A route exists; a workflow does not. |
+| `httpx`/`starlette` deprecation warning | Emitted by the installed stack during `TestClient` use, twice per run. Not from this repository's code. |
+| `legacy/` holds 158 files | Archived by decision, not by accident. It is inert: nothing builds, imports or lints it, and `legacy/README.md` says why each iteration was abandoned. |
+| No real-world validity | The generator's labels come from the same distributions the model learns. The README, the report header, the ADR and the generator's docstring each say so. Nothing here is evidence about people. |
