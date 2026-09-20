@@ -1,14 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from aburrimiento.model import BoredomModel
-
-BASE_DIR = Path(__file__).resolve().parents[2]
-DATA_DIR = BASE_DIR / "assets"
 
 app = FastAPI(title="Analizador Aburrimiento API")
 
@@ -23,7 +18,7 @@ class AnalyzeResponse(BaseModel):
 
 @app.on_event("startup")
 def startup() -> None:
-    analizador = BoredomModel(data_dir=DATA_DIR)
+    analizador = BoredomModel()
     dataset = analizador.generate(300)
     analizador.train(dataset.features, dataset.labels)
     app.state.analizador = analizador

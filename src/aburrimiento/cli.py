@@ -10,7 +10,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Analizador de aburrimiento (demo).")
     parser.add_argument("--muestras", type=int, default=300)
     parser.add_argument("--nivel", type=str, default="alto")
-    parser.add_argument("--data-dir", type=Path, default=None)
+    parser.add_argument(
+        "--schema-path",
+        type=Path,
+        default=None,
+        help="Path to the canonical schema. Defaults to assets/schema.json.",
+    )
     return parser
 
 
@@ -18,7 +23,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    analizador = BoredomModel(data_dir=args.data_dir)
+    analizador = BoredomModel(schema_path=args.schema_path)
     dataset = analizador.generate(args.muestras)
     analizador.train(dataset.features, dataset.labels)
 

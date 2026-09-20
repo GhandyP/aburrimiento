@@ -53,7 +53,7 @@ EXPECTED_PREDICT_PROBA = {
 
 
 def test_migrated_feature_vector_and_predictions() -> None:
-    analyzer = BoredomModel(data_dir=None)
+    analyzer = BoredomModel()
     dataset = analyzer.generate(300)
     analyzer.train(dataset.features, dataset.labels)
 
@@ -63,7 +63,7 @@ def test_migrated_feature_vector_and_predictions() -> None:
 
 
 def test_migrated_dataset_and_model_outputs_match_baseline() -> None:
-    analyzer = BoredomModel(data_dir=None)
+    analyzer = BoredomModel()
     dataset = analyzer.generate(300)
     analyzer.train(dataset.features, dataset.labels)
 

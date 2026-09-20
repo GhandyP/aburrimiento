@@ -34,6 +34,6 @@ def test_cli_main_returns_an_integer_exit_code(capsys: pytest.CaptureFixture[str
     capsys.readouterr()
 
 
-def test_model_rejects_missing_data_directory() -> None:
-    with pytest.raises(FileNotFoundError, match="Data directory does not exist"):
-        BoredomModel(data_dir=Path("does-not-exist"))
+def test_model_rejects_missing_schema_file() -> None:
+    with pytest.raises(FileNotFoundError, match="Canonical schema file does not exist"):
+        BoredomModel(schema_path=Path("does-not-exist/schema.json"))

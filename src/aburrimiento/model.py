@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import re
-import unicodedata
 from pathlib import Path
 from typing import cast
 
@@ -10,52 +8,17 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
+from .schema import load_schema
 from .synthetic import FEATURE_MODIFIERS, DatasetBundle, SyntheticDataGenerator
-
-DEFAULT_DATA_DIR = Path(__file__).resolve().parents[2] / "assets"
-
-
-def _slugify(text: str) -> str:
-    normalized = unicodedata.normalize("NFKD", text)
-    ascii_text = normalized.encode("ascii", "ignore").decode("ascii")
-    cleaned = re.sub(r"[^a-zA-Z0-9]+", "_", ascii_text).strip("_").lower()
-    return cleaned
-
-
-def _require_data_dir(data_dir: Path) -> Path:
-    if not data_dir.is_dir():
-        raise FileNotFoundError(f"Data directory does not exist: {data_dir}")
-    missing = [
-        name
-        for name in ("estructura_indicadores.csv", "niveles_clasificacion.csv")
-        if not (data_dir / name).is_file()
-    ]
-    if missing:
-        names = ", ".join(missing)
-        raise FileNotFoundError(f"Data directory {data_dir} is missing required CSVs: {names}")
-    return data_dir
-
-
-def load_indicator_names(data_dir: Path) -> list[str]:
-    indicators_path = _require_data_dir(data_dir) / "estructura_indicadores.csv"
-    df = pd.read_csv(indicators_path)
-    return [_slugify(name) for name in df["Indicador"].tolist()]
-
-
-def load_levels(data_dir: Path) -> list[str]:
-    niveles_path = _require_data_dir(data_dir) / "niveles_clasificacion.csv"
-    df = pd.read_csv(niveles_path)
-    return [str(value).strip().lower() for value in df["Nivel"].tolist()]
 
 
 class BoredomModel:
     """Pipeline compatibility facade; canonical schema owns data resolution from T6 onward."""
 
-    def __init__(self, data_dir: Path | None = None, seed: int = 42) -> None:
-        resolved_data_dir = DEFAULT_DATA_DIR if data_dir is None else data_dir
-        self.data_dir = _require_data_dir(resolved_data_dir)
-        self.feature_names = load_indicator_names(self.data_dir)
-        self.levels = load_levels(self.data_dir)
+    def __init__(self, schema_path: Path | None = None, seed: int = 42) -> None:
+        schema = load_schema(schema_path)
+        self.feature_names = list(schema.indicator_ids)
+        self.levels = list(schema.level_ids)
         self.seed = seed
         self.scaler = StandardScaler()
         self.label_encoder = LabelEncoder()
