@@ -392,7 +392,8 @@ its closure criterion was observed and the commit identity was recorded in this 
 1. `make check` green on a clean checkout: ruff, mypy, pytest, web lint, typecheck, tests, build.
 2. `make setup && make train && make run && make web` reaches a working analysis from scratch.
 3. No artifact under version control that a command can regenerate.
-4. One schema source; any divergence fails a test in Python **and** in TypeScript.
+4. One schema source; any divergence fails a test in Python **and** in TypeScript. *(Corrected during
+   Phase 4: measurement showed the two halves catch different failures — see the note in §9.)*
 5. Every number in the README is reproducible by a committed command.
 6. No claim of real-world validity anywhere in the repository.
 7. `legacy/` is inert: referenced by nothing that builds.
@@ -667,3 +668,70 @@ feature is a defect in the criterion, not a passing task. Two such cases were ca
 during execution: the T4 regression guard, which initially pinned only arithmetic and three widely
 separated labels, and the T10 report serializer, whose `notes` field was emitted as a list of single
 characters while the Markdown renderer hid it.
+
+---
+
+### Phase 4 — Web frontend — COMPLETE (T16 absorbed here)
+
+| Task | Commit | Closure evidence observed |
+|---|---|---|
+| T17 | `1b84740` | lint, typecheck, 5 tests and a production build pass; no indicator id typed by hand outside the generated file |
+| T18+T19+T20 | `e143874` | 16 tests; client typed `Record<IndicatorId, number>`; zero host literals outside `config.ts` |
+| T21+T16 | `62c15a4` | 97 tests; the contract lock fails on a renamed field; `make check` runs both halves |
+
+#### §6 condition 4 — corrected by measurement
+
+The definition of done claimed that "any divergence fails a test in Python **and** in TypeScript".
+Measured, the two halves divide the work differently than assumed:
+
+- **Renaming an id inside the generated file does NOT fail the TypeScript typecheck.** No hand-written
+  code names an indicator: the UI derives its groups, fields, labels, range and level meanings from
+  `generated/schema.ts` and adapts by itself. That is the intended outcome of a single schema, not a
+  gap. The earlier expectation that the typecheck would catch such a rename was simply wrong.
+- **What Python catches:** a stale generated artifact. `tests/test_web_types_drift.py` fails with two
+  assertions naming the missing id when the file on disk is not what the generator would emit.
+- **What TypeScript catches:** a hand-written id or a wrong field type. Verified by injecting
+  `const probe: IndicatorId = "indicador_que_no_existe"` — the typecheck rejects it and lists all
+  fourteen valid ids in the error message.
+- **What neither catches, and the contract lock does:** a contract change that regenerates cleanly.
+  `web/src/contract.golden.json` is a hand-maintained approval lock, deliberately not generated, so a
+  genuine change requires updating it on purpose. Verified by renaming a field in
+  `assets/schema.json`: the web suite fails naming the offending field, and restoring the schema
+  returns the generated file to the identical sha256.
+
+Corrected condition: **one schema source; the generated artifact cannot go stale (Python), the code
+cannot name a field that does not exist (TypeScript), and a deliberate contract change must update
+the approval lock (the golden).**
+
+#### The Flutter defect is closed
+
+The archived client hardcoded `127.0.0.1:8000` while its own README documented `10.0.2.2` for the
+Android emulator. The replacement reads `VITE_API_URL`, validates it, falls back with a recorded
+reason instead of blanking the page, and documents the LAN case including the `HOST=0.0.0.0`
+requirement. A test asserts the default still resolves when the variable is absent.
+
+#### Two defects found by verifying rather than trusting
+
+- **Vitest's `setupFiles` pointed at the test file** instead of the setup module, so Vitest imported
+  the suite as setup and then ran it again as a suite. The reported "10 tests passed" was five tests
+  executed twice, and the run took 27 seconds instead of 5.2. The inflated count *was* the bug. The
+  repaired suite reports the true number in a fifth of the time.
+- **The harness safety policy refuses to write dot-prefixed env paths**, so `.env.example` was
+  impossible even for the parent. Escalated instead of worked around: the user chose `web/env.example`.
+  The purpose is unchanged — a human copies it, Vite never reads it, and a test proves the default
+  still resolves without it.
+
+#### Deviations
+
+- T18, T19 and T20 landed in one commit (`e143874`): the client, its configuration and the UI are one
+  flow, and the configuration is what the client reads.
+- T21 and T16 landed together (`62c15a4`): the contract lock and the gate are one closing gesture —
+  a lock is only enforced if a single command runs it.
+- `web/src/test-setup.ts` was created by a worker outside its declared surfaces, to satisfy a setup
+  file the task asked for but failed to list. It was reported rather than hidden, and it is kept.
+
+#### Totals at the end of Phase 4
+
+97 tests — 75 Python, 22 web — green under one command. 242 files changed across the branch,
+9,929 insertions and 2,309 deletions, most of the churn being the 158 archived files and the deleted
+`0.2/` tree.
