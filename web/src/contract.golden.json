@@ -1,0 +1,41 @@
+{
+  "frozenAt": "1.0.0",
+  "why": "Approval lock for the frontend wire contract; deliberately not generated; genuine contract changes require updating this file on purpose.",
+  "indicatorIds": [
+    "reflejo_sistemas_culturales",
+    "productividad_capitalista",
+    "alienacion_neoliberal",
+    "racismo_sistemico",
+    "malestar_generalizado",
+    "carencia_de_sentido",
+    "restriccion_de_libertad",
+    "frustracion_de_agencia",
+    "desenganche",
+    "alta_excitacion",
+    "inatencion",
+    "percepcion_tiempo_lenta",
+    "estrategias_bloqueadas",
+    "angustia_profunda"
+  ],
+  "levelIds": ["bajo", "medio", "alto"],
+  "request": {
+    "keys": ["datos"],
+    "fields": [
+      "reflejo_sistemas_culturales",
+      "productividad_capitalista",
+      "alienacion_neoliberal",
+      "racismo_sistemico",
+      "malestar_generalizado",
+      "carencia_de_sentido",
+      "restriccion_de_libertad",
+      "frustracion_de_agencia",
+      "desenganche",
+      "alta_excitacion",
+      "inatencion",
+      "percepcion_tiempo_lenta",
+      "estrategias_bloqueadas",
+      "angustia_profunda"
+    ]
+  },
+  "response": {"keys": ["nivel"]}
+}

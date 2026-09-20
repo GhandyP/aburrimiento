@@ -10,7 +10,7 @@ PORT ?= 8000
 help:  ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-setup:  ## Install Python dependencies from the lockfile
+setup:  ## Install Python dependencies from the lockfile (npm ci --prefix web installs web dependencies)
 	uv sync
 
 fmt:  ## Format and auto-fix Python sources
@@ -27,7 +27,7 @@ typecheck:  ## Run the static type checker
 test:  ## Run the test suite
 	uv run pytest
 
-check: lint typecheck test  ## Run every verification; must be green before committing
+check: lint typecheck test web-check  ## Run every verification; must be green before committing
 
 web-check:  ## Run the web lint, typecheck, tests and production build
 	@if [ ! -d web/node_modules ]; then npm ci --prefix web; fi
