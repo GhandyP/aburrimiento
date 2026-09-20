@@ -633,3 +633,37 @@ stored: no identifiers, names, free text, IP addresses or device information.
   trusted.
 - A commit message for T15 was amended once to remove literal backslash-escapes from a code sample;
   the recorded hash is the post-amend one.
+
+---
+
+## 10. Test policy — resolved 2026-09-20
+
+A worker correctly refused to start without a declared TDD mode, source and runner. The gap was in the
+delegation, not in the worker: no task brief in this plan had ever declared them. Resolved here once, so
+no future task has to ask.
+
+| Field | Value |
+|---|---|
+| TDD mode | `disabled` — nothing in this repository enables strict TDD |
+| Source | none — no configuration file, no CLI setting, nothing to read |
+| Python runner | `uv run pytest` |
+| Web runner | `npm test` (from T17 onward) |
+| Single verification gate | `make check` |
+| Test requirement | **independent of the mode** |
+
+The mode being `disabled` means tests are not written before the code. It never means tests are
+optional: **every task closes with tests, and a task whose tests do not exercise its own claim is not
+closed.** The distinction matters because a disabled mode is easy to misread as permission.
+
+Evidence for the `disabled` value rather than an assumption: `~/.config/gentle-ai` does not exist on
+this machine, and `gentle-ai help` lists `install`, `uninstall`, `sync`, `skill-registry`, the `sdd-*`
+commands and `review`, with no TDD setting among them. Nothing in the repository declares one either.
+
+**Consequence for every remaining delegation:** the task brief states the mode, the runner and the gate
+explicitly. A worker should never have to ask and never have to guess.
+
+**Consequence for review:** a task whose closure criterion is a test that would pass without its
+feature is a defect in the criterion, not a passing task. Two such cases were caught and replaced
+during execution: the T4 regression guard, which initially pinned only arithmetic and three widely
+separated labels, and the T10 report serializer, whose `notes` field was emitted as a list of single
+characters while the Markdown renderer hid it.
