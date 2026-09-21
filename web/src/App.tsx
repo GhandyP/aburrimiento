@@ -6,6 +6,7 @@ import { GROUPS, INDICATOR_IDS, VALUE_RANGE, type IndicatorId } from "./generate
 import { Banner } from "./components/Banner";
 import { Group } from "./components/Group";
 import { ResultCard } from "./components/ResultCard";
+import { CapturePanel } from "./components/CapturePanel";
 
 const midpoint = (VALUE_RANGE.min + VALUE_RANGE.max) / 2;
 const initialValues = Object.fromEntries(INDICATOR_IDS.map((id) => [id, midpoint])) as Record<IndicatorId, number>;
@@ -82,6 +83,7 @@ function App() {
       <div aria-live="polite" aria-atomic="true">
         {result?.kind === "ok" && <ResultCard levelId={result.level} />}
       </div>
+      {result?.kind === "ok" && <CapturePanel values={values} onValidationErrors={setErrors} />}
     </main>
   );
 }

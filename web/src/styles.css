@@ -36,4 +36,10 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .submit-button:disabled { cursor: wait; opacity: .65; }
 .result-card { margin-top: 1.5rem; padding: 1.25rem; border: 3px solid; border-radius: .75rem; background: var(--surface); }
 .result-card h2 span { color: var(--muted); font-size: .65em; font-weight: 400; }
+.capture-panel { margin-top: 1.5rem; padding: 1.25rem; border: 1px solid var(--border); border-radius: .75rem; background: var(--surface); }
+.capture-panel label { display: block; margin: 1rem 0 .5rem; font-weight: 600; }
+.capture-panel select { width: 100%; padding: .65rem; border: 1px solid var(--border); border-radius: .35rem; color: var(--ink); background: var(--surface); font: inherit; }
+.capture-button { width: 100%; margin-top: 1rem; padding: .8rem 1rem; border: 0; border-radius: .5rem; color: white; background: var(--accent); font: inherit; font-weight: 700; cursor: pointer; }
+.capture-button:disabled { cursor: wait; opacity: .65; }
+.capture-confirmation { font-weight: 700; }
 @media (max-width: 420px) { .field-controls { grid-template-columns: 1fr 5rem; gap: .5rem; } }
