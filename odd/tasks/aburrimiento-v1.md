@@ -883,3 +883,58 @@ Everything below is known, deliberate, and not hidden behind a passing suite.
 | `httpx`/`starlette` deprecation warning | Emitted by the installed stack during `TestClient` use, twice per run. Not from this repository's code. |
 | `legacy/` holds 158 files | Archived by decision, not by accident. It is inert: nothing builds, imports or lints it, and `legacy/README.md` says why each iteration was abandoned. |
 | No real-world validity | The generator's labels come from the same distributions the model learns. The README, the report header, the ADR and the generator's docstring each say so. Nothing here is evidence about people. |
+
+---
+
+## 13. Post-closure work — 2026-09-20
+
+Two tasks were added after the plan closed, both taken from the debt table in §12. They are numbered
+T26 and T27 so the log stays ordered; the count is now **27 tasks**, not 25.
+
+| Task | Commit | What it closed |
+|---|---|---|
+| T26 | `f502352` | A published claim the evidence did not support |
+| T27 | `b23ba6b` | The capture path having a route but no workflow |
+
+### T26 — correcting an overclaim, including my own
+
+The README, ADR 0003 and §9 of this plan all stated that the linear baseline **"beats"** the 120-tree
+forest. That rested on a single seed where the margin was **one sample out of 600**: 587 against 588
+correct, with the two confusion matrices differing in exactly one cell.
+
+Re-measured across twelve seeds with the same splits, now reproducibly through `make evaluate`:
+
+| Metric | Value |
+|---|---|
+| Mean difference (logistic − forest) | +0.222 percentage points |
+| Standard deviation | 0.416 percentage points |
+| Seeds won by logistic regression | 6 |
+| Seeds won by the forest | 1 |
+| Ties | 5 |
+
+The mean is smaller than its own dispersion, and both models win on some seeds. The supported
+statement is that the two are **statistically indistinguishable on this generator**. What survives is
+the useful part: a linear model *matches* 120 trees, so the forest buys no accuracy for its
+complexity.
+
+This matters more than the correction itself. The project's premise is that every published number is
+reproducible and honestly read — and the same process that removed the previous iteration's invented
+88–92 % produced this overclaim from a one-sample margin. It was caught by re-measuring rather than by
+review, and the sweep is now part of the evaluator so the next reader does not have to trust a single
+run. A test encodes the rule with a name:
+`test_seed_sweep_does_not_claim_winner_when_mean_is_smaller_than_std`.
+
+The §12 row calling the served model "the worse of the two measured" is therefore gone. With the two
+indistinguishable there is no measured reason to change it, so that debt is closed rather than
+carried.
+
+### T27 — the capture path gets a workflow
+
+`POST /samples` was implemented, tested and verified against a real database, but nothing in the
+frontend called it. The analysis screen now offers to keep an observation: the three levels read from
+the generated schema, an explicit "prefer not to say" that sends no `nivel_observado` rather than an
+empty string, a confirmation announced through an `aria-live` region, and one sentence on screen
+stating what is stored and what is not. The panel does not appear before an analysis has run, and
+re-running the analysis clears the previous confirmation.
+
+**Test count is now 108: 79 Python, 29 web.**
